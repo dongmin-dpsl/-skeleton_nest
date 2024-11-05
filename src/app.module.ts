@@ -9,6 +9,7 @@ import { Post } from './entity/post.entity';
     ConfigModule.forRoot(envConfig),
     MikroOrmModule.forRootAsync(postgresConfig),
     MikroOrmModule.forFeature([Post]),
+    PostModule,
   ],
   controllers: [],
 })
