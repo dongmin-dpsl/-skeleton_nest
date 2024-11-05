@@ -3,6 +3,7 @@ import { envConfig } from './config/env.config';
 @Module({
   imports: [
     ConfigModule.forRoot(envConfig),
+    MikroOrmModule.forRootAsync(postgresConfig),
   ],
   controllers: [],
 })
