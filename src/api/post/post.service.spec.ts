@@ -7,6 +7,7 @@ import { PostService } from './post.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { PostRepository } from '../../entity/post.repository';
 import { Post } from 'src/entity/post.entity';
+import { UpdatePostDto } from './dto/update-post.dto';
 
 describe('PostService', () => {
   let service: PostService;
@@ -78,7 +79,7 @@ describe('PostService', () => {
       expect(result).toEqual(posts);
     });
 
-    it('게시물이 없는 경우 빈 배열을 반화하여야 한다.', async () => {
+    it('게시물이 없는 경우 빈 배열을 반환하여야 한다.', async () => {
       const posts: Post[] = [];
 
       jest.spyOn(postRepo, 'findAll').mockResolvedValue(posts);
@@ -105,14 +106,50 @@ describe('PostService', () => {
       expect(result).toEqual(post);
     });
 
-    it('게시물이 없는경우 null을 반환하여야 한다.', async () => {
+    it('게시물이 없는경우 404 에러를 반환하여야 한다.', async () => {
       const post: Post = null;
 
       jest.spyOn(postRepo, 'findOne').mockResolvedValue(post);
 
-      const result = await service.findOne(1);
+      try {
+        await service.findOne(1);
+      } catch (err) {
+        expect(err.status).toBe(404);
+      }
+    });
+  });
 
-      expect(result).toEqual(post);
+  describe('update', () => {
+    it('변경될 게시물이 존재하는 경우 변경된 게시물이 하나라면 참을 반환한다.', async () => {
+      const id: number = 1;
+      const post: UpdatePostDto = {
+        title: '제목',
+        content: '내용',
+        writer: '작성자',
+      };
+
+      jest.spyOn(postRepo, 'nativeUpdate').mockResolvedValue(1);
+
+      const result = await service.update(id, post);
+
+      expect(result).toEqual(true);
+    });
+
+    it('변경될 게시물이 존재하지 않는 경우 404에러를 반환해야 한다.', async () => {
+      const id: number = 1;
+      const post: UpdatePostDto = {
+        title: '제목',
+        content: '내용',
+        writer: '작성자',
+      };
+
+      jest.spyOn(postRepo, 'nativeUpdate').mockResolvedValue(0);
+
+      try {
+        await service.update(id, post);
+      } catch (err) {
+        expect(err.status).toBe(404);
+      }
     });
   });
 });

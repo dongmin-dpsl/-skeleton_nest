@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { PostRepository } from '../../entity/post.repository';
 import { Post } from '../../entity/post.entity';
 import { EntityManager } from '@mikro-orm/postgresql';
+import { ErrorMessage } from '../../helper/message/error.message';
 
 @Injectable()
 export class PostService {
@@ -26,16 +27,23 @@ export class PostService {
 
   async findOne(id: number) {
     const post = await this.postRepo.findOne(id);
+    if (post === null) {
+      throw new NotFoundException(ErrorMessage.NOT_FOUND_POST);
+    }
     return post;
   }
 
   async update(id: number, updatePostDto: UpdatePostDto) {
-    await this.postRepo.nativeUpdate({ id }, updatePostDto);
+    const postCount = await this.postRepo.nativeUpdate({ id }, updatePostDto);
 
-    return updatePostDto;
+    if (postCount === 0) {
+      throw new NotFoundException(ErrorMessage.NOT_FOUND_POST);
+    }
+    return postCount === 1;
   }
 
   async remove(id: number) {
-    return this.postRepo.nativeDelete({ id });
+    await this.postRepo.nativeDelete({ id });
+    return true;
   }
 }
