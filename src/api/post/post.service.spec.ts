@@ -7,6 +7,7 @@ import { PostService } from './post.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { PostRepository } from '../../entity/post.repository';
 import { Post } from 'src/entity/post.entity';
+import { UpdatePostDto } from './dto/update-post.dto';
 
 describe('PostService', () => {
   let service: PostService;
@@ -112,6 +113,40 @@ describe('PostService', () => {
 
       try {
         await service.findOne(1);
+      } catch (err) {
+        expect(err.status).toBe(404);
+      }
+    });
+  });
+
+  describe('update', () => {
+    it('변경될 게시물이 존재하는 경우 변경된 게시물이 하나라면 참을 반환한다.', async () => {
+      const id: number = 1;
+      const post: UpdatePostDto = {
+        title: '제목',
+        content: '내용',
+        writer: '작성자',
+      };
+
+      jest.spyOn(postRepo, 'nativeUpdate').mockResolvedValue(1);
+
+      const result = await service.update(id, post);
+
+      expect(result).toEqual(true);
+    });
+
+    it('변경될 게시물이 존재하지 않는 경우 404에러를 반환해야 한다.', async () => {
+      const id: number = 1;
+      const post: UpdatePostDto = {
+        title: '제목',
+        content: '내용',
+        writer: '작성자',
+      };
+
+      jest.spyOn(postRepo, 'nativeUpdate').mockResolvedValue(0);
+
+      try {
+        await service.update(id, post);
       } catch (err) {
         expect(err.status).toBe(404);
       }
