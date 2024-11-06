@@ -4,6 +4,7 @@ import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { postgresConfig } from './config/mikro-orm.postgres.config';
 import { envConfig } from './config/env.config';
 import { Post } from './entity/post.entity';
+import { LoggerMiddleware } from './helper/logger';
 @Module({
   imports: [
     ConfigModule.forRoot(envConfig),
@@ -13,4 +14,8 @@ import { Post } from './entity/post.entity';
   ],
   controllers: [],
 })
-export class AppModule { }
+export class AppModule {
+  configure(consumer: MiddlewareConsumer): void {
+    consumer.apply(LoggerMiddleware).forRoutes('*');
+  }
+}
