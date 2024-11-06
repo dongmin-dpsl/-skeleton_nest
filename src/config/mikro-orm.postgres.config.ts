@@ -1,7 +1,4 @@
-import {
-  MikroOrmModuleAsyncOptions,
-  MikroOrmModuleOptions,
-} from '@mikro-orm/nestjs';
+import { MikroOrmModuleAsyncOptions } from '@mikro-orm/nestjs';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
@@ -16,7 +13,6 @@ export const postgresConfig: MikroOrmModuleAsyncOptions = {
     password: process.env.PG_DATABASE_PASSWORD,
     driver: PostgreSqlDriver,
     debug: true,
-    // entities: ['../entity/*.entity.ts'],
     autoLoadEntities: true,
     tsNode: true,
   }),

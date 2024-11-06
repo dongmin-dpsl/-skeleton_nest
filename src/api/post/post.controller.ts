@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { PostService } from './post.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
@@ -9,13 +18,11 @@ export class PostController {
 
   @Post()
   async create(@Body() createPostDto: CreatePostDto) {
-    console.log(createPostDto)
     return await this.postService.create(createPostDto);
-    
   }
 
   @Get()
-  findAll(){
+  findAll() {
     return this.postService.findAll();
   }
 
@@ -25,7 +32,10 @@ export class PostController {
   }
 
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: string, @Body() updatePostDto: UpdatePostDto) {
+  update(
+    @Param('id', ParseIntPipe) id: string,
+    @Body() updatePostDto: UpdatePostDto,
+  ) {
     return this.postService.update(+id, updatePostDto);
   }
 

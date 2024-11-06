@@ -6,6 +6,7 @@ import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { postgresConfig } from './config/mikro-orm.postgres.config';
 import { envConfig } from './config/env.config';
 import { Post } from './entity/post.entity';
+import { UserModule } from './api/user/user.module';
 import { LoggerMiddleware } from './helper/logger';
 
 @Module({
@@ -14,6 +15,7 @@ import { LoggerMiddleware } from './helper/logger';
     MikroOrmModule.forRootAsync(postgresConfig),
     MikroOrmModule.forFeature([Post]),
     PostModule,
+    UserModule,
   ],
   controllers: [],
   providers: [
