@@ -78,7 +78,7 @@ describe('PostService', () => {
       expect(result).toEqual(posts);
     });
 
-    it('게시물이 없는 경우 빈 배열을 반화하여야 한다.', async () => {
+    it('게시물이 없는 경우 빈 배열을 반환하여야 한다.', async () => {
       const posts: Post[] = [];
 
       jest.spyOn(postRepo, 'findAll').mockResolvedValue(posts);
@@ -105,14 +105,16 @@ describe('PostService', () => {
       expect(result).toEqual(post);
     });
 
-    it('게시물이 없는경우 null을 반환하여야 한다.', async () => {
+    it('게시물이 없는경우 404 에러를 반환하여야 한다.', async () => {
       const post: Post = null;
 
       jest.spyOn(postRepo, 'findOne').mockResolvedValue(post);
 
-      const result = await service.findOne(1);
-
-      expect(result).toEqual(post);
+      try {
+        await service.findOne(1);
+      } catch (err) {
+        expect(err.status).toBe(404);
+      }
     });
   });
 });
