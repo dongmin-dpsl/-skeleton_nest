@@ -44,8 +44,9 @@ export class UserService {
     return { count, users };
   }
 
-  async findOne(id: string) {
+  async findOneById(id: string): Promise<UserInfo> {
     const query = {
+      size: 1,
       _source: [User.first_name._, User.last_name._, User.email._],
       query: { term: { _id: { value: id } } },
     };
@@ -54,7 +55,18 @@ export class UserService {
       index: User.alias,
       body: query,
     });
-    return { user: esRes.body.hits.hits.map(({ _source }) => _source)[0] };
+
+    const user = esRes.hits.hits[0]?._source;
+
+    if (user === undefined)
+      throw new NotFoundException(ErrorMessage.NOT_FOUND_USER);
+
+    return {
+      id: user.id,
+      firstName: user.first_name,
+      lastName: user.last_name,
+      email: user.email,
+    };
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {
