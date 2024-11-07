@@ -3,6 +3,7 @@ import { UserService } from './user.service';
 import { OpenSearch } from '../../lib/opensearch';
 import { UserInfo } from './dto/response-type.dto';
 import { NotFoundException } from '@nestjs/common';
+import { UpdateUserDto } from './dto/update-user.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 
 describe('UserService', () => {
@@ -197,7 +198,7 @@ describe('UserService', () => {
           max_score: 1,
           hits: [
             {
-        _index: 'user',
+              _index: 'user',
               _id: 'oZ7RAZMBav9dzgrUZV73',
               _score: 1,
               _source: {
@@ -238,6 +239,18 @@ describe('UserService', () => {
       await expect(service.findOneById(docId)).rejects.toThrow(
         NotFoundException,
       );
+    });
+  });
+
+  describe('remove', () => {
+    it('데이터가 삭제되면 true를 반환한다.', async () => {
+      const docId: any = 'oZ7RAZMBav9dzgrUZV73';
+
+      jest.spyOn(openSearch, 'deleteByQuery').mockResolvedValue(docId);
+
+      const result = await service.remove(docId);
+
+      expect(result).toBeTruthy();
     });
   });
 

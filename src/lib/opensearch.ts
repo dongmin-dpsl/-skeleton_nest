@@ -31,9 +31,9 @@ export class OpenSearch {
   }
 
   async update({ index, id, body, refresh }) {
-    return this.client.update({ index, id, body, refresh });
   }
-  async delete_by_query({ index, body, refresh }) {
+
+  async deleteByQuery({ index, body, refresh }) {
     return this.client.delete_by_query({ index, body, refresh });
   }
 }

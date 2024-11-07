@@ -94,9 +94,9 @@ export class UserService {
     return updateUserDto.getMapperOpenSearch();
   }
 
-  async remove(id: string) {
+  async remove(id: string): Promise<string> {
     const query = { term: { _id: { value: id } } };
-    await this.openSearch.delete_by_query({
+    await this.openSearch.deleteByQuery({
       index: User.alias,
       body: { query },
       refresh: true,
