@@ -24,11 +24,9 @@ export class OpenSearch {
     return this.client.index({ index, body });
   }
 
-  async search({
-    index,
-    body,
-  }): Promise<ApiResponse<Record<string, any>, unknown>> {
-    return this.client.search({ index, body });
+  async search({ index, body }): Promise<Record<string, any>> {
+    const esRes = await this.client.search({ index, body });
+    return esRes.body;
   }
 
   async update({ index, id, body, refresh }) {

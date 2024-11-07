@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-// import { openSearch } from 'src/config/opensearch.config';
-import { User } from 'src/template/openSearch/User';
-import { OpenSearch } from 'src/lib/opensearch';
+import { User } from '../../template/openSearch/User';
+import { OpenSearch } from '../../lib/opensearch';
+import { UserInfo, UserList } from './dto/response-type.dto';
 
 @Injectable()
 export class UserService {
@@ -21,22 +21,27 @@ export class UserService {
    * @param size
    * @returns
    */
-  async findAll(from: number, size: number) {
+  async findAll(from: number, size: number): Promise<UserList> {
     const query = {
       from,
       size,
-      _source: [User.first_name._, User.last_name._, User.email._],
+      _source: [User.id._, User.first_name._, User.last_name._, User.email._],
     };
 
     const esRes = await this.openSearch.search({
       index: User.alias,
       body: query,
     });
-    const users = {
-      count: esRes.body.hits.total.value,
-      user: esRes.body.hits.hits.map(({ _source }) => _source),
-    };
-    return users;
+
+    const count = esRes.hits.total.value;
+    const users: UserInfo[] = esRes.hits.hits.map(({ _source }) => ({
+      id: _source.id,
+      firstName: _source.first_name,
+      lastName: _source.last_name,
+      email: _source.email,
+    }));
+
+    return { count, users };
   }
 
   async findOne(id: string) {
