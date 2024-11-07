@@ -5,10 +5,11 @@ import {
 } from '@nestjs/common';
 import { Client } from '@opensearch-project/opensearch';
 import { ErrorMessage } from '../helper/message/error.message';
+import { winstonLogger } from './winston';
 
 @Injectable()
 export class OpenSearch {
-  private client: Client;
+  private readonly client: Client;
 
   constructor() {
     const node1Url = process.env.OPENSEARCH_NODE1;
@@ -31,6 +32,16 @@ export class OpenSearch {
   }
 
   async update({ index, id, body, refresh }) {
+    try {
+      return await this.client.update({ index, id, body, refresh });
+    } catch (err) {
+      if (err.statusCode === 404) {
+        winstonLogger.warn(err.stack);
+        throw new NotFoundException();
+      }
+      winstonLogger.error(err.stack);
+      throw new InternalServerErrorException(ErrorMessage.SERVER_ERROR);
+    }
   }
 
   async deleteByQuery({ index, body, refresh }) {

@@ -83,15 +83,26 @@ export class UserService {
     };
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto) {
+  async update(docId: string, updateUserDto: UpdateUserDto): Promise<boolean> {
+    const { email, firstName, gender, id, ipAddress, lastName } = updateUserDto;
+
+    const body = {
+      email: email,
+      first_name: firstName,
+      gender: gender,
+      id: id,
+      ip_address: ipAddress,
+      last_name: lastName,
+    };
+
     await this.openSearch.update({
       index: User.alias,
-      id: id,
-      body: { doc: updateUserDto.getMapperOpenSearch() },
+      id: docId,
+      body: { doc: body },
       refresh: true,
     });
 
-    return updateUserDto.getMapperOpenSearch();
+    return true;
   }
 
   async remove(id: string): Promise<string> {
