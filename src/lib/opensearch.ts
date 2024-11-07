@@ -1,6 +1,10 @@
-import { Injectable } from '@nestjs/common';
-import { ApiResponse, Client } from '@opensearch-project/opensearch';
-import { readFileSync } from 'node:fs';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
+import { Client } from '@opensearch-project/opensearch';
+import { ErrorMessage } from '../helper/message/error.message';
 
 @Injectable()
 export class OpenSearch {
@@ -17,11 +21,8 @@ export class OpenSearch {
     });
   }
 
-  async index({
-    index,
-    body,
-  }): Promise<ApiResponse<Record<string, any>, unknown>> {
-    return this.client.index({ index, body });
+  async index({ index, body }): Promise<Record<string, any>> {
+    return (await this.client.index({ index, body, refresh: true })).body;
   }
 
   async search({ index, body }): Promise<Record<string, any>> {
