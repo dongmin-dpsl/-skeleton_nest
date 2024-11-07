@@ -3,6 +3,7 @@ import { UserService } from './user.service';
 import { OpenSearch } from '../../lib/opensearch';
 import { UserInfo } from './dto/response-type.dto';
 import { NotFoundException } from '@nestjs/common';
+import { CreateUserDto } from './dto/create-user.dto';
 
 describe('UserService', () => {
   let service: UserService;
@@ -237,6 +238,27 @@ describe('UserService', () => {
       await expect(service.findOneById(docId)).rejects.toThrow(
         NotFoundException,
       );
+    });
+  });
+
+  describe('create', () => {
+    it('추가된 데이터를 반환하여야 한다.', async () => {
+      const createUserDto: CreateUserDto = {
+        email: 'test1@naver.com',
+        firstName: 'kim1',
+        gender: 'man',
+        id: '2',
+        ipAddress: '192.0.0.4',
+        lastName: 'dong-jeon',
+      };
+
+      const searchRes: any = { _id: 'N_weB5MBitdao_hyZ2iW' };
+
+      jest.spyOn(openSearch, 'index').mockResolvedValue(searchRes);
+
+      const result = await service.createOne(createUserDto);
+
+      expect(result).toBe(searchRes._id);
     });
   });
 });

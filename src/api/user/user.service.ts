@@ -1,19 +1,33 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from '../../template/openSearch/User';
 import { OpenSearch } from '../../lib/opensearch';
 import { UserInfo, UserList } from './dto/response-type.dto';
+import { ErrorMessage } from '../../helper/message/error.message';
 
 @Injectable()
 export class UserService {
   constructor(private openSearch: OpenSearch) {}
 
-  async create(createUserDto: CreateUserDto) {
-    const body = createUserDto.getMapperOpenSearch();
-    await this.openSearch.index({ index: User.alias, body: body });
+  async createOne(createUserDto: CreateUserDto): Promise<string> {
+    const { email, firstName, gender, id, ipAddress, lastName } = createUserDto;
 
-    return body;
+    const body = {
+      email: email,
+      first_name: firstName,
+      gender: gender,
+      id: id,
+      ip_address: ipAddress,
+      last_name: lastName,
+    };
+
+    const esRes = await this.openSearch.index({
+      index: User.alias,
+      body: body,
+    });
+
+    return esRes._id;
   }
 
   /** 전체 데이터 리턴
