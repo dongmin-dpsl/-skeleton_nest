@@ -1,29 +1,29 @@
-import { User } from 'src/template/openSearch/User';
+import { IsEmail, IsNotEmpty, MaxLength, NotEquals } from 'class-validator';
 
 export class UpdateUserDto {
+  @IsEmail()
   email: string;
 
+  @NotEquals(null)
+  @IsNotEmpty()
+  @MaxLength(10)
   firstName: string;
 
+  @NotEquals(null)
+  @IsNotEmpty()
+  @MaxLength(2)
   gender: string;
 
+  @NotEquals(null)
+  @IsNotEmpty()
   id: string;
 
+  @NotEquals(null)
+  @IsNotEmpty()
   ipAddress: string;
 
+  @NotEquals(null)
+  @IsNotEmpty()
+  @MaxLength(20)
   lastName: string;
-
-  /** 오픈서치와 매핑작업을 위한 메소드
-   * @returns
-   */
-  public getMapperOpenSearch() {
-    return {
-      [User.id._]: this.id,
-      [User.email._]: this.email,
-      [User.first_name._]: this.firstName,
-      [User.last_name._]: this.lastName,
-      [User.gender._]: this.gender,
-      [User.ip_address._]: this.ipAddress,
-    };
-  }
 }
