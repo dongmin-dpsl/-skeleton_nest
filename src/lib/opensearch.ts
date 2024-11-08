@@ -13,12 +13,9 @@ export class OpenSearch {
 
   constructor() {
     const node1Url = process.env.OPENSEARCH_NODE1;
-    const caCertsPath = process.env.OPENSEARCH_CA_CERT_PATH;
 
     this.client = new Client({
-      //   node: protocol + '://' + auth + '@' + host + ':' + port,
       node: [node1Url],
-      ssl: { ca: readFileSync(caCertsPath) },
     });
   }
 
