@@ -3,7 +3,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from '../../template/openSearch/User';
 import { OpenSearch } from '../../lib/opensearch';
-import { UserInfo, UserList } from './dto/response-type.dto';
+import { UserInfo, UsersWithMeta } from './dto/response-type.dto';
 import { ErrorMessage } from '../../helper/message/error.message';
 
 @Injectable()
@@ -35,7 +35,7 @@ export class UserService {
    * @param size
    * @returns
    */
-  async findAll(from: number, size: number): Promise<UserList> {
+  async findAll(from: number, size: number): Promise<UsersWithMeta> {
     const query = {
       from,
       size,
