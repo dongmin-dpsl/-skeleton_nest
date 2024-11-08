@@ -5,7 +5,7 @@ export interface UserInfo {
   email: string;
 }
 
-export interface UserList {
+export interface UsersWithMeta {
   count: number;
   users: UserInfo[];
 }
