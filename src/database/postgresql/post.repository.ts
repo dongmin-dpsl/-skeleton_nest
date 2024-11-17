@@ -1,10 +1,10 @@
 import { EntityRepository } from '@mikro-orm/postgresql';
 import { Post } from './post.entity';
-import { PostModel, RegisterPost } from 'src/domain/post.model';
+import { PostModel, CreatePostCommand } from 'src/domain/post.model';
 
 export class PostRepository extends EntityRepository<Post> {
-  async createPost(registerPost: RegisterPost): Promise<PostModel> {
-    const entity = await this.create(registerPost);
+  async createPost(createPostCommand: CreatePostCommand): Promise<PostModel> {
+    const entity = await this.create(createPostCommand);
     await this.em.flush();
 
     return {

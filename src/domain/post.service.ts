@@ -3,7 +3,7 @@ import { UpdatePostDto } from '../controller/post/dto/update-post.dto';
 import { PostRepository } from '../database/postgresql/post.repository';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { ErrorMessage } from '../common/helper/message/error.message';
-import { PostModel, RegisterPost } from './post.model';
+import { PostModel, CreatePostCommand } from './post.model';
 
 import { PostUseCase } from './post.usecase';
 @Injectable()
@@ -13,8 +13,8 @@ export class PostService implements PostUseCase {
     private readonly postRepo: PostRepository,
   ) {}
 
-  async registerPost(registerPost: RegisterPost): Promise<PostModel> {
-    const post = await this.postRepo.createPost(registerPost);
+  async registerPost(createPostCommand: CreatePostCommand): Promise<PostModel> {
+    const post = await this.postRepo.createPost(createPostCommand);
     await this.em.flush();
     return post;
   }

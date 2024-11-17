@@ -5,7 +5,7 @@ export class PostModel {
   writer: string;
 }
 
-export interface RegisterPost {
+export interface CreatePostCommand {
   title: string;
   content: string;
   writer: string;
