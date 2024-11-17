@@ -1,16 +1,8 @@
-import {
-  Entity,
-  EntityRepositoryType,
-  PrimaryKey,
-  Property,
-} from '@mikro-orm/core';
-import { PostRepository } from './post.repository';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
 import { BaseTimeEntity } from './base-time';
 
-@Entity({ repository: () => PostRepository, tableName: 'post' })
+@Entity({ tableName: 'post' })
 export class Post {
-  [EntityRepositoryType]?: PostRepository;
-
   @PrimaryKey()
   id: number;
 

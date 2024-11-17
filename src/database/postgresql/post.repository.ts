@@ -1,10 +1,65 @@
-import { EntityRepository } from '@mikro-orm/postgresql';
+import { EntityManager, EntityRepository } from '@mikro-orm/postgresql';
 import { Post } from './post.entity';
-import { PostModel, CreatePostCommand } from 'src/domain/post.model';
+import { PostDbCommandPort } from '../../domain/port/out/post.db.command.port';
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@mikro-orm/nestjs';
+import { PostDbQueryPort } from '../../domain/port/out/post.db.query.port';
+import { PostModel } from '../../domain/post.model';
+import {
+  CreatePostCommand,
+  UpdatePostCommand,
+} from '../../domain/port/in/post.usecase';
 
-export class PostRepository extends EntityRepository<Post> {
+@Injectable()
+export class PostRepository implements PostDbCommandPort, PostDbQueryPort {
+  constructor(
+    private readonly em: EntityManager,
+    @InjectRepository(Post)
+    private readonly postRepo: EntityRepository<Post>,
+  ) {}
+
+  async findAll(): Promise<PostModel[]> {
+    const entities = await this.postRepo.findAll();
+    return entities.map((entity) => ({
+      id: entity.id,
+      title: entity.title,
+      content: entity.content,
+      writer: entity.writer,
+    }));
+  }
+
+  async findOne(id: number): Promise<PostModel> {
+    const entity = await this.postRepo.findOneOrFail(id);
+    return {
+      id: entity.id,
+      title: entity.title,
+      content: entity.content,
+      writer: entity.writer,
+    };
+  }
+
+  async updatePost(
+    id: number,
+    updatePostCommand: UpdatePostCommand,
+  ): Promise<PostModel> {
+    const entity = await this.postRepo.findOneOrFail(id);
+    Object.assign(entity, updatePostCommand);
+    await this.em.flush();
+    return {
+      id: entity.id,
+      title: entity.title,
+      content: entity.content,
+      writer: entity.writer,
+    };
+  }
+
+  async deletePost(id: number): Promise<void> {
+    const entity = await this.postRepo.findOneOrFail(id);
+    await this.em.removeAndFlush(entity);
+  }
+
   async createPost(createPostCommand: CreatePostCommand): Promise<PostModel> {
-    const entity = await this.create(createPostCommand);
+    const entity = await this.postRepo.create(createPostCommand);
     await this.em.flush();
 
     return {
