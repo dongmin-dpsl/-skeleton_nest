@@ -9,15 +9,13 @@ import {
   ParseIntPipe,
   Inject,
 } from '@nestjs/common';
-import { PostService } from '../../domain/post.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
-import { PostUseCase } from 'src/domain/post.usecase';
+import { PostUseCase } from '../../domain/port/in/post.usecase';
 
 @Controller('post')
 export class PostController {
   constructor(
-    private readonly postService: PostService,
     @Inject('PostUseCase')
     private readonly postUseCase: PostUseCase,
   ) {}
@@ -30,12 +28,12 @@ export class PostController {
 
   @Get()
   findAll() {
-    return this.postService.findAll();
+    return this.postUseCase.findAll();
   }
 
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: string) {
-    return this.postService.findOne(+id);
+    return this.postUseCase.findOne(+id);
   }
 
   @Patch(':id')
@@ -43,11 +41,12 @@ export class PostController {
     @Param('id', ParseIntPipe) id: string,
     @Body() updatePostDto: UpdatePostDto,
   ) {
-    return this.postService.update(+id, updatePostDto);
+    const { title, content, writer } = updatePostDto;
+    return this.postUseCase.updatePost(+id, { title, content, writer });
   }
 
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: string) {
-    return this.postService.remove(+id);
+    return this.postUseCase.deletePost(+id);
   }
 }

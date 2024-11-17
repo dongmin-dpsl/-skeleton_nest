@@ -4,9 +4,3 @@ export class PostModel {
   content: string;
   writer: string;
 }
-
-export interface CreatePostCommand {
-  title: string;
-  content: string;
-  writer: string;
-}
