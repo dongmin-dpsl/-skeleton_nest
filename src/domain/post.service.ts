@@ -1,48 +1,51 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { UpdatePostDto } from '../controller/post/dto/update-post.dto';
-import { PostRepository } from '../database/postgresql/post.repository';
-import { EntityManager } from '@mikro-orm/postgresql';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { ErrorMessage } from '../common/helper/message/error.message';
-import { PostModel, CreatePostCommand } from './post.model';
+import { PostModel } from './post.model';
+import {
+  CreatePostCommand,
+  PostUseCase,
+  UpdatePostCommand,
+} from './port/in/post.usecase';
+import { PostDbCommandPort } from './port/out/post.db.command.port';
+import { PostDbQueryPort } from './port/out/post.db.query.port';
 
-import { PostUseCase } from './post.usecase';
 @Injectable()
 export class PostService implements PostUseCase {
   constructor(
-    private readonly em: EntityManager,
-    private readonly postRepo: PostRepository,
+    @Inject('PostDbCommandPort')
+    private readonly postDbCommandPort: PostDbCommandPort,
+    @Inject('PostDbQueryPort')
+    private readonly postDbQueryPort: PostDbQueryPort,
   ) {}
 
   async registerPost(createPostCommand: CreatePostCommand): Promise<PostModel> {
-    const post = await this.postRepo.createPost(createPostCommand);
-    await this.em.flush();
+    const post = await this.postDbCommandPort.createPost(createPostCommand);
     return post;
   }
 
-  async findAll() {
-    const post = await this.postRepo.findAll();
+  async findAll(): Promise<PostModel[]> {
+    const post = await this.postDbQueryPort.findAll();
     return post;
   }
 
-  async findOne(id: number) {
-    const post = await this.postRepo.findOne(id);
+  async findOne(id: number): Promise<PostModel> {
+    const post = await this.postDbQueryPort.findOne(id);
     if (post === null) {
       throw new NotFoundException(ErrorMessage.NOT_FOUND_POST);
     }
     return post;
   }
 
-  async update(id: number, updatePostDto: UpdatePostDto) {
-    const postCount = await this.postRepo.nativeUpdate({ id }, updatePostDto);
+  async updatePost(
+    id: number,
+    updatePostCommand: UpdatePostCommand,
+  ): Promise<PostModel> {
+    const post = await this.postDbCommandPort.updatePost(id, updatePostCommand);
 
-    if (postCount === 0) {
-      throw new NotFoundException(ErrorMessage.NOT_FOUND_POST);
-    }
-    return postCount === 1;
+    return post;
   }
 
-  async remove(id: number) {
-    await this.postRepo.nativeDelete({ id });
-    return true;
+  async deletePost(id: number): Promise<void> {
+    await this.postDbCommandPort.deletePost(id);
   }
 }
