@@ -4,10 +4,10 @@ import { EntityManager } from '@mikro-orm/postgresql';
 import { describe } from 'node:test';
 
 import { PostService } from './post.service';
-import { CreatePostDto } from './dto/create-post.dto';
-import { PostRepository } from '../../entity/post.repository';
-import { Post } from 'src/entity/post.entity';
-import { UpdatePostDto } from './dto/update-post.dto';
+import { CreatePostDto } from '../controller/post/dto/create-post.dto';
+import { PostRepository } from '../database/postgresql/post.repository';
+import { Post } from '../database/postgresql/post.entity';
+import { UpdatePostDto } from '../controller/post/dto/update-post.dto';
 
 describe('PostService', () => {
   let service: PostService;

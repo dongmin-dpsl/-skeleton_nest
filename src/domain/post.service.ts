@@ -1,10 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreatePostDto } from './dto/create-post.dto';
-import { UpdatePostDto } from './dto/update-post.dto';
-import { PostRepository } from '../../entity/post.repository';
-import { Post } from '../../entity/post.entity';
+import { CreatePostDto } from '../controller/post/dto/create-post.dto';
+import { UpdatePostDto } from '../controller/post/dto/update-post.dto';
+import { PostRepository } from '../database/postgresql/post.repository';
+import { Post } from '../database/postgresql/post.entity';
 import { EntityManager } from '@mikro-orm/postgresql';
-import { ErrorMessage } from '../../helper/message/error.message';
+import { ErrorMessage } from '../common/helper/message/error.message';
 
 @Injectable()
 export class PostService {

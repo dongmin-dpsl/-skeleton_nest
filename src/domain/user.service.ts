@@ -1,10 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { User } from '../../template/openSearch/User';
-import { OpenSearch } from '../../lib/opensearch';
-import { UserInfo, UsersWithMeta } from './dto/response-type.dto';
-import { ErrorMessage } from '../../helper/message/error.message';
+import { CreateUserDto } from '../controller/user/dto/create-user.dto';
+import { UpdateUserDto } from '../controller/user/dto/update-user.dto';
+import { User } from '../database/opensearch/User';
+import { OpenSearch } from '../common/lib/opensearch';
+import {
+  UserInfo,
+  UsersWithMeta,
+} from '../controller/user/dto/response-type.dto';
+import { ErrorMessage } from '../common/helper/message/error.message';
 
 @Injectable()
 export class UserService {

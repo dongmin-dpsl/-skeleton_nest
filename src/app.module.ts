@@ -1,13 +1,13 @@
 import { MiddlewareConsumer, Module, ValidationPipe } from '@nestjs/common';
-import { PostModule } from './api/post/post.module';
 import { ConfigModule } from '@nestjs/config';
 import { APP_PIPE } from '@nestjs/core';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
-import { postgresConfig } from './config/mikro-orm.postgres.config';
-import { envConfig } from './config/env.config';
-import { Post } from './entity/post.entity';
-import { UserModule } from './api/user/user.module';
-import { LoggerMiddleware } from './helper/logger';
+import { postgresConfig } from './common/config/mikro-orm.postgres.config';
+import { envConfig } from './common/config/env.config';
+import { Post } from './database/postgresql/post.entity';
+import { UserModule } from './common/module/user.module';
+import { PostModule } from './common/module/post.module';
+import { LoggerMiddleware } from './common/helper/logger';
 
 @Module({
   imports: [

@@ -5,7 +5,7 @@ import {
   NestInterceptor,
 } from '@nestjs/common';
 import { map, Observable } from 'rxjs';
-import { SuccessRes } from 'src/helper/response/success.res';
+import { SuccessRes } from 'src/common/helper/response/success.res';
 
 @Injectable()
 export class SuccessResInterceptor implements NestInterceptor {

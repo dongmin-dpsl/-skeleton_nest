@@ -1,10 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserService } from './user.service';
 import { OpenSearch } from '../../lib/opensearch';
-import { UserInfo } from './dto/response-type.dto';
+import { UserInfo } from '../controller/user/dto/response-type.dto';
 import { NotFoundException } from '@nestjs/common';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from '../controller/user/dto/update-user.dto';
+import { CreateUserDto } from '../controller/user/dto/create-user.dto';
 
 describe('UserService', () => {
   let service: UserService;
