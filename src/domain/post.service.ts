@@ -1,21 +1,20 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreatePostDto } from '../controller/post/dto/create-post.dto';
 import { UpdatePostDto } from '../controller/post/dto/update-post.dto';
 import { PostRepository } from '../database/postgresql/post.repository';
-import { Post } from '../database/postgresql/post.entity';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { ErrorMessage } from '../common/helper/message/error.message';
+import { PostModel, RegisterPost } from './post.model';
 
+import { PostUseCase } from './post.usecase';
 @Injectable()
-export class PostService {
+export class PostService implements PostUseCase {
   constructor(
     private readonly em: EntityManager,
     private readonly postRepo: PostRepository,
   ) {}
 
-  async create(createPostDto: CreatePostDto): Promise<Post> {
-    const { title, content, writer } = createPostDto;
-    const post = await this.postRepo.create({ title, content, writer });
+  async registerPost(registerPost: RegisterPost): Promise<PostModel> {
+    const post = await this.postRepo.createPost(registerPost);
     await this.em.flush();
     return post;
   }

@@ -7,6 +7,12 @@ import { Post } from '../../database/postgresql/post.entity';
 @Module({
   imports: [MikroOrmModule.forFeature([Post])],
   controllers: [PostController],
-  providers: [PostService],
+  providers: [
+    PostService,
+    {
+      provide: 'PostUseCase',
+      useClass: PostService,
+    },
+  ],
 })
 export class PostModule {}
