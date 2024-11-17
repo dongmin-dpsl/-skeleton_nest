@@ -13,7 +13,6 @@ import { LoggerMiddleware } from './common/helper/logger';
   imports: [
     ConfigModule.forRoot(envConfig),
     MikroOrmModule.forRootAsync(postgresConfig),
-    MikroOrmModule.forFeature([Post]),
     PostModule,
     UserModule,
   ],
