@@ -9,9 +9,11 @@ import {
   ParseIntPipe,
   Inject,
 } from '@nestjs/common';
-import { CreatePostDto } from './dto/create-post.dto';
-import { UpdatePostDto } from './dto/update-post.dto';
-import { PostUseCase } from '../../domain/port/in/post.usecase';
+import {
+  CreatePostCommand,
+  PostUseCase,
+  UpdatePostCommand,
+} from '../../domain/port/in/post.usecase';
 
 @Controller('post')
 export class PostController {
@@ -21,9 +23,8 @@ export class PostController {
   ) {}
 
   @Post()
-  async create(@Body() createPostDto: CreatePostDto) {
-    const { title, content, writer } = createPostDto;
-    return await this.postUseCase.registerPost({ title, content, writer });
+  async create(@Body() createPostCommand: CreatePostCommand) {
+    return await this.postUseCase.registerPost(createPostCommand);
   }
 
   @Get()
@@ -39,10 +40,9 @@ export class PostController {
   @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: string,
-    @Body() updatePostDto: UpdatePostDto,
+    @Body() updatePostCommand: UpdatePostCommand,
   ) {
-    const { title, content, writer } = updatePostDto;
-    return this.postUseCase.updatePost(+id, { title, content, writer });
+    return this.postUseCase.updatePost(+id, updatePostCommand);
   }
 
   @Delete(':id')

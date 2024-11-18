@@ -11,9 +11,21 @@ export interface PostUseCase {
   deletePost: (id: number) => Promise<void>;
 }
 
+import { IsNotEmpty, MaxLength, NotEquals } from 'class-validator';
+
 export class CreatePostCommand {
+  @NotEquals(null)
+  @IsNotEmpty()
+  @MaxLength(500)
   title: string;
+
+  @NotEquals(null)
+  @IsNotEmpty()
   content: string;
+
+  @NotEquals(null)
+  @IsNotEmpty()
+  @MaxLength(5)
   writer: string;
 }
 
