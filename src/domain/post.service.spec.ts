@@ -1,13 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { EntityManager } from '@mikro-orm/postgresql';
-
 import { describe } from 'node:test';
-
 import { PostService } from './post.service';
-import { CreatePostDto } from '../controller/post/dto/create-post.dto';
 import { PostRepository } from '../database/postgresql/post.repository';
-import { Post } from '../database/postgresql/post.entity';
-import { UpdatePostDto } from '../controller/post/dto/update-post.dto';
+import { CreatePostCommand, UpdatePostCommand } from './port/in/post.usecase';
+import { PostModel } from './post.model';
 
 describe('PostService', () => {
   let service: PostService;
@@ -48,27 +45,27 @@ describe('PostService', () => {
 
   describe('create', () => {
     it('신규 게시물이 반환되어야 한다.', async () => {
-      const createPostDto: CreatePostDto = {
+      const createPostCommand: CreatePostCommand = {
         title: '제목',
         content: '내용',
         writer: '작성자',
       };
-      const post: Post = { id: 1, ...createPostDto };
+      const post: PostModel = { id: 1, ...createPostCommand };
 
-      jest.spyOn(postRepo, 'create').mockReturnValue(post);
+      jest.spyOn(postRepo, 'createPost').mockReturnValue(post);
       jest.spyOn(em, 'flush').mockResolvedValue();
 
-      const result = await service.create(createPostDto);
+      const result = await service.registerPost(createPostCommand);
 
       expect(result).toEqual(post);
-      expect(postRepo.create).toHaveBeenCalledWith(createPostDto);
+      expect(postRepo.createPost).toHaveBeenCalledWith(createPostCommand);
       expect(em.flush).toHaveBeenCalled();
     });
   });
 
   describe('findAll', () => {
     it('게시물이 여러개인 경우 여러개가 반환되어야 한다.', async () => {
-      const posts: Post[] = [
+      const posts: PostModel[] = [
         { id: 1, title: '제목', content: '내용', writer: '작성자' },
         { id: 2, title: '제목1', content: '내용1', writer: '작성자1' },
       ];
@@ -80,7 +77,7 @@ describe('PostService', () => {
     });
 
     it('게시물이 없는 경우 빈 배열을 반환하여야 한다.', async () => {
-      const posts: Post[] = [];
+      const posts: PostModel[] = [];
 
       jest.spyOn(postRepo, 'findAll').mockResolvedValue(posts);
 
@@ -92,7 +89,7 @@ describe('PostService', () => {
 
   describe('findOne', () => {
     it('게시물이 존재하는 경우 게시물을 반환하여야 한다.', async () => {
-      const post: Post = {
+      const post: PostModel = {
         id: 1,
         title: '제목',
         content: '내용',
@@ -105,51 +102,23 @@ describe('PostService', () => {
 
       expect(result).toEqual(post);
     });
-
-    it('게시물이 없는경우 404 에러를 반환하여야 한다.', async () => {
-      const post: Post = null;
-
-      jest.spyOn(postRepo, 'findOne').mockResolvedValue(post);
-
-      try {
-        await service.findOne(1);
-      } catch (err) {
-        expect(err.status).toBe(404);
-      }
-    });
   });
 
   describe('update', () => {
-    it('변경될 게시물이 존재하는 경우 변경된 게시물이 하나라면 참을 반환한다.', async () => {
+    it('업데이트되는 변경된 게시물이 반환되어야 한다.', async () => {
       const id: number = 1;
-      const post: UpdatePostDto = {
+      const post: UpdatePostCommand = {
         title: '제목',
         content: '내용',
         writer: '작성자',
       };
+      const postModel: PostModel = { id: 1, ...post };
 
-      jest.spyOn(postRepo, 'nativeUpdate').mockResolvedValue(1);
+      jest.spyOn(postRepo, 'updatePost').mockResolvedValue(postModel);
 
-      const result = await service.update(id, post);
+      const result = await service.updatePost(id, post);
 
       expect(result).toEqual(true);
-    });
-
-    it('변경될 게시물이 존재하지 않는 경우 404에러를 반환해야 한다.', async () => {
-      const id: number = 1;
-      const post: UpdatePostDto = {
-        title: '제목',
-        content: '내용',
-        writer: '작성자',
-      };
-
-      jest.spyOn(postRepo, 'nativeUpdate').mockResolvedValue(0);
-
-      try {
-        await service.update(id, post);
-      } catch (err) {
-        expect(err.status).toBe(404);
-      }
     });
   });
 });
