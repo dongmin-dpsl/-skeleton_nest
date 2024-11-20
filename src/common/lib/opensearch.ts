@@ -19,8 +19,8 @@ export class OpenSearch {
     });
   }
 
-  async index({ index, body }): Promise<Record<string, any>> {
-    return (await this.client.index({ index, body, refresh: true })).body;
+  async index({ index, body, refresh = false }): Promise<Record<string, any>> {
+    return (await this.client.index({ index, body, refresh })).body;
   }
 
   async search({ index, body }): Promise<Record<string, any>> {
@@ -28,7 +28,7 @@ export class OpenSearch {
     return esRes.body;
   }
 
-  async update({ index, id, body, refresh }) {
+  async update({ index, id, body, refresh = false }) {
     try {
       return await this.client.update({ index, id, body, refresh });
     } catch (err) {
@@ -41,7 +41,7 @@ export class OpenSearch {
     }
   }
 
-  async deleteByQuery({ index, body, refresh }) {
+  async deleteByQuery({ index, body, refresh = false }) {
     return this.client.delete_by_query({ index, body, refresh });
   }
 }
