@@ -4,7 +4,6 @@ import { APP_PIPE } from '@nestjs/core';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { postgresConfig } from './common/config/mikro-orm.postgres.config';
 import { envConfig } from './common/config/env.config';
-import { Post } from './database/postgresql/post.entity';
 import { UserModule } from './common/module/user.module';
 import { PostModule } from './common/module/post.module';
 import { LoggerMiddleware } from './common/helper/logger';
