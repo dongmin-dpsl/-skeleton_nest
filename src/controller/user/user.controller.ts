@@ -7,41 +7,49 @@ import {
   Param,
   Delete,
   Req,
+  Inject,
 } from '@nestjs/common';
-import { UserService } from '../../domain/user.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { FindUserListDto } from './dto/find-user-list.dto';
+import {
+  UserUseCase,
+  CreateUserCommand,
+  FindUserListCommand,
+  UpdateUserCommand,
+} from '../../domain/port/in/user.usecase';
 
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    @Inject('UserUseCase')
+    private readonly userUseCase: UserUseCase,
+  ) {}
 
   @Post()
-  async create(@Body() createUserDto: CreateUserDto) {
-    const docId = await this.userService.createOne(createUserDto);
-    return this.userService.findOneById(docId);
+  async create(@Body() createUserCommand: CreateUserCommand) {
+    const docId = await this.userUseCase.createUser(createUserCommand);
+    return this.userUseCase.findUser(docId);
   }
 
   @Get()
-  findAll(@Req() findUserListDto: FindUserListDto) {
-    const { from = 0, size = 5 } = findUserListDto;
-    return this.userService.findAll(from, size);
+  findAll(@Req() findUserListCommand: FindUserListCommand) {
+    return this.userUseCase.findUserList(findUserListCommand);
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.userService.findOneById(id);
+    return this.userUseCase.findUser(id);
   }
 
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    await this.userService.update(id, updateUserDto);
-    return this.userService.findOneById(id);
+  async update(
+    @Param('id') id: string,
+    @Body() updateUserCommand: UpdateUserCommand,
+  ) {
+    await this.userUseCase.updateUser(id, updateUserCommand);
+    return this.userUseCase.findUser(id);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.userService.remove(id);
+    return this.userUseCase.deleteUser(id);
   }
 }
