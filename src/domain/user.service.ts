@@ -1,120 +1,54 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateUserDto } from '../controller/user/dto/create-user.dto';
-import { UpdateUserDto } from '../controller/user/dto/update-user.dto';
-import { User } from '../database/opensearch/User';
-import { OpenSearch } from '../common/lib/opensearch';
+import { Inject, Injectable } from '@nestjs/common';
 import {
-  UserInfo,
-  UsersWithMeta,
-} from '../controller/user/dto/response-type.dto';
-import { ErrorMessage } from '../common/helper/message/error.message';
+  UserUseCase,
+  CreateUserCommand,
+  FindUserListCommand,
+  UpdateUserCommand,
+} from './port/in/user.usecase';
+import { UserOsCommandPort } from './port/out/user.os.command.port';
+import { UserOsQueryPort } from './port/out/user.os.query.port';
+import { UserModel } from './user.model';
 
 @Injectable()
-export class UserService {
-  constructor(private openSearch: OpenSearch) {}
+export class UserService implements UserUseCase {
+  constructor(
+    @Inject('UserOsCommandPort')
+    private readonly userOsCommandPort: UserOsCommandPort,
+    @Inject('UserOsQueryPort')
+    private readonly userOsQueryPort: UserOsQueryPort,
+  ) {}
 
-  async createOne(createUserDto: CreateUserDto): Promise<string> {
-    const { email, firstName, gender, id, ipAddress, lastName } = createUserDto;
+  async findUser(id: string): Promise<UserModel> {
+    const user = await this.userOsQueryPort.findOneById(id);
 
-    const body = {
-      email: email,
-      first_name: firstName,
-      gender: gender,
-      id: id,
-      ip_address: ipAddress,
-      last_name: lastName,
-    };
-
-    const esRes = await this.openSearch.index({
-      index: User.alias,
-      body: body,
-    });
-
-    return esRes._id;
+    return user;
   }
 
-  /** 전체 데이터 리턴
-   * @param from
-   * @param size
-   * @returns
-   */
-  async findAll(from: number, size: number): Promise<UsersWithMeta> {
-    const query = {
-      from,
-      size,
-      _source: [User.id._, User.first_name._, User.last_name._, User.email._],
-    };
+  async createUser(createUserCommand: CreateUserCommand): Promise<string> {
+    const id = await this.userOsCommandPort.createUser(createUserCommand);
 
-    const esRes = await this.openSearch.search({
-      index: User.alias,
-      body: query,
-    });
-
-    const count = esRes.hits.total.value;
-    const users: UserInfo[] = esRes.hits.hits.map(({ _source }) => ({
-      id: _source.id,
-      firstName: _source.first_name,
-      lastName: _source.last_name,
-      email: _source.email,
-    }));
-
-    return { count, users };
+    return id;
   }
 
-  async findOneById(id: string): Promise<UserInfo> {
-    const query = {
-      size: 1,
-      _source: [User.first_name._, User.last_name._, User.email._],
-      query: { term: { _id: { value: id } } },
-    };
+  async findUserList(
+    findUserListCommand: FindUserListCommand,
+  ): Promise<UserModel[]> {
+    const users = await this.userOsQueryPort.findAll(findUserListCommand);
 
-    const esRes = await this.openSearch.search({
-      index: User.alias,
-      body: query,
-    });
-
-    const user = esRes.hits.hits[0]?._source;
-
-    if (user === undefined)
-      throw new NotFoundException(ErrorMessage.NOT_FOUND_USER);
-
-    return {
-      id: user.id,
-      firstName: user.first_name,
-      lastName: user.last_name,
-      email: user.email,
-    };
+    return users;
   }
 
-  async update(docId: string, updateUserDto: UpdateUserDto): Promise<boolean> {
-    const { email, firstName, gender, id, ipAddress, lastName } = updateUserDto;
+  async updateUser(
+    id: string,
+    updateUserCommand: UpdateUserCommand,
+  ): Promise<string> {
+    await this.userOsCommandPort.updateUser(id, updateUserCommand);
 
-    const body = {
-      email: email,
-      first_name: firstName,
-      gender: gender,
-      id: id,
-      ip_address: ipAddress,
-      last_name: lastName,
-    };
-
-    await this.openSearch.update({
-      index: User.alias,
-      id: docId,
-      body: { doc: body },
-      refresh: true,
-    });
-
-    return true;
+    return id;
   }
 
-  async remove(id: string): Promise<string> {
-    const query = { term: { _id: { value: id } } };
-    await this.openSearch.deleteByQuery({
-      index: User.alias,
-      body: { query },
-      refresh: true,
-    });
+  async deleteUser(id: string): Promise<string> {
+    await this.userOsCommandPort.deleteUser(id);
 
     return id;
   }

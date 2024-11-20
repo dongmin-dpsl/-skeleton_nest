@@ -1,33 +1,44 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserService } from './user.service';
-import { OpenSearch } from '../../lib/opensearch';
-import { UserInfo } from '../controller/user/dto/response-type.dto';
-import { NotFoundException } from '@nestjs/common';
-import { UpdateUserDto } from '../controller/user/dto/update-user.dto';
-import { CreateUserDto } from '../controller/user/dto/create-user.dto';
+import { UserModel } from './user.model';
+import {
+  CreateUserCommand,
+  FindUserListCommand,
+  UpdateUserCommand,
+} from './port/in/user.usecase';
+import { UserOsQueryPort } from './port/out/user.os.query.port';
+import { UserOsCommandPort } from './port/out/user.os.command.port';
 
 describe('UserService', () => {
   let service: UserService;
-  let openSearch: OpenSearch;
+  let userOsQueryPort: UserOsQueryPort;
+  let userOsCommandPort: UserOsCommandPort;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UserService,
         {
-          provide: OpenSearch,
+          provide: 'UserOsCommandPort',
           useValue: {
-            index: jest.fn(),
-            search: jest.fn(),
-            update: jest.fn(),
-            deleteByQuery: jest.fn(),
+            createUser: jest.fn(),
+            updateUser: jest.fn(),
+            deleteUser: jest.fn(),
+          },
+        },
+        {
+          provide: 'UserOsQueryPort',
+          useValue: {
+            findAll: jest.fn(),
+            findOneById: jest.fn(),
           },
         },
       ],
     }).compile();
 
     service = module.get<UserService>(UserService);
-    openSearch = module.get<OpenSearch>(OpenSearch);
+    userOsQueryPort = module.get<UserOsQueryPort>('UserOsQueryPort');
+    userOsCommandPort = module.get<UserOsCommandPort>('UserOsCommandPort');
   });
 
   it('should be return User Object', () => {
@@ -39,116 +50,61 @@ describe('UserService', () => {
       const from: number = 0;
       const size: number = 2;
 
-      const searchRes: any = Promise.resolve({
-        hits: {
-          total: {
-            value: 2,
-            relation: 'eq',
-          },
-          max_score: 1,
-          hits: [
-            {
-              _index: 'user',
-              _id: 'oZ7RAZMBav9dzgrUZV73',
-              _score: 1,
-              _source: {
-                email: 'test@naver.com',
-                first_name: 'kim',
-                gender: 'man',
-                id: '1',
-                ip_address: '192.0.0.1',
-                last_name: 'dong-dong',
-              },
-            },
-            {
-              _index: 'user',
-              _id: 'op7RAZMBav9dzgrUp16q',
-              _score: 1,
-              _source: {
-                email: 'test1@naver.com',
-                first_name: 'kim1',
-                gender: 'man',
-                id: '2',
-                ip_address: '192.0.0.4',
-                last_name: 'dong-jeon',
-              },
-            },
-          ],
-        },
-      });
-
-      const users: UserInfo[] = [
+      const users: UserModel[] = [
         {
+          id: '1',
           email: 'test@naver.com',
           firstName: 'kim',
-          id: '1',
+          gender: 'man',
+          ipAddress: '192.0.0.1',
           lastName: 'dong-dong',
         },
         {
+          id: '2',
           email: 'test1@naver.com',
           firstName: 'kim1',
-          id: '2',
+          gender: 'man',
+          ipAddress: '192.0.0.4',
           lastName: 'dong-jeon',
         },
       ];
 
-      jest.spyOn(openSearch, 'search').mockReturnValue(searchRes);
+      const findUserListCommand: FindUserListCommand = {
+        from,
+        size,
+      };
 
-      const result = await service.findAll(from, size);
+      jest.spyOn(userOsQueryPort, 'findAll').mockResolvedValue(users);
 
-      expect(result.count).toBe(2);
-      expect(result.users).toMatchObject(users);
+      const result = await service.findUserList(findUserListCommand);
+
+      expect(result.length).toBe(2);
+      expect(result).toMatchObject(users);
     });
 
     it('데이터가 없으면 빈 배열을 반환하여야 한다.', async () => {
       const from: number = 0;
       const size: number = 2;
-      const searchRes: any = Promise.resolve({
-        hits: {
-          total: {
-            value: 0,
-            relation: 'eq',
-          },
-          max_score: 1,
-          hits: [],
-        },
-      });
 
-      jest.spyOn(openSearch, 'search').mockReturnValue(searchRes);
-      const result = await service.findAll(from, size);
+      jest.spyOn(userOsQueryPort, 'findAll').mockResolvedValue([]);
 
-      expect(result.count).toBe(0);
-      expect(result.users).toMatchObject([]);
+      const findUserListCommand: FindUserListCommand = {
+        from,
+        size,
+      };
+
+      const result = await service.findUserList(findUserListCommand);
+
+      expect(result).toEqual([]);
     });
   });
 
-  describe('update', () => {
-    it('변경할 데이터가 존재하지 않는다면 404를 반환한다.', async () => {
-      const docId: string = 'f2dsaaf354';
-      const updateUserDto: any = {
-        email: 'emailString@naver.com',
-        firstName: 'firstNameString',
-        gender: 'genderString',
-        id: 'idString',
-        ipAddress: 'ipAddressString',
-        lastName: 'lastNameString',
-      };
-
-      jest
-        .spyOn(openSearch, 'update')
-        .mockRejectedValue(new NotFoundException());
-
-      await expect(service.update(docId, updateUserDto)).rejects.toThrow(
-        NotFoundException,
-      );
-    });
-
+  describe('updateUser', () => {
     it('변경할 데이터가 존재하면 변경 후 true를 반환한다.', async () => {
-      const updateUserDto: UpdateUserDto = {
+      const updateUserCommand: UpdateUserCommand = {
         email: 'test1@naver.com',
         firstName: 'kim1',
         gender: 'man',
-        id: '2',
         ipAddress: '192.0.0.4',
         lastName: 'dong-jeon',
       };
@@ -170,7 +126,6 @@ describe('UserService', () => {
                 email: 'test1@naver.com',
                 first_name: 'kim1',
                 gender: 'man',
-                id: '2',
                 ip_address: '192.0.0.4',
                 last_name: 'dong-jeon',
               },
@@ -179,99 +134,63 @@ describe('UserService', () => {
         },
       });
 
-      jest.spyOn(openSearch, 'update').mockResolvedValue(searchRes);
+      jest.spyOn(userOsCommandPort, 'updateUser').mockResolvedValue(searchRes);
 
-      const result = await service.update(docId, updateUserDto);
+      const result = await service.updateUser(docId, updateUserCommand);
 
       expect(result).toBeTruthy();
     });
   });
 
-  describe('findOneById', () => {
-    it('검색된 문서가 존재한다면 UserInfo형태로 반환하여야 한다.', async () => {
-      const searchRes: any = Promise.resolve({
-        hits: {
-          total: {
-            value: 1,
-            relation: 'eq',
-          },
-          max_score: 1,
-          hits: [
-            {
-              _index: 'user',
-              _id: 'oZ7RAZMBav9dzgrUZV73',
-              _score: 1,
-              _source: {
-                email: 'test@naver.com',
-                first_name: 'kim',
-                gender: 'man',
-                id: '1',
-                ip_address: '192.0.0.1',
-                last_name: 'dong-dong',
-              },
-            },
-          ],
-        },
-      });
-
+  describe('findOneUser', () => {
+    it('검색된 문서가 존재한다면 User형태로 반환하여야 한다.', async () => {
       const docId: string = 'oZ7RAZMBav9dzgrUZV73';
-      const user: UserInfo = {
-        email: 'test@naver.com',
-        firstName: 'kim',
+      const user: UserModel = {
         id: '1',
+        email: 'test@naver.com',
+        gender: 'man',
+        ipAddress: '192.0.0.1',
+        firstName: 'kim',
         lastName: 'dong-dong',
       };
 
-      jest.spyOn(openSearch, 'search').mockResolvedValue(searchRes);
+      jest.spyOn(userOsQueryPort, 'findOneById').mockResolvedValue(user);
 
-      const result = await service.findOneById(docId);
+      const result = await service.findUser(docId);
 
       expect(result).toMatchObject(user);
     });
-
-    it('검색된 문서가 없다면 404에러를 반환하여야 한다.', async () => {
-      const docId: string = 'oZ7RAZMBav9dzgrUZV73';
-
-      jest
-        .spyOn(openSearch, 'search')
-        .mockRejectedValue(new NotFoundException());
-
-      await expect(service.findOneById(docId)).rejects.toThrow(
-        NotFoundException,
-      );
-    });
   });
 
-  describe('remove', () => {
+  describe('deleteUser', () => {
     it('데이터가 삭제되면 true를 반환한다.', async () => {
       const docId: any = 'oZ7RAZMBav9dzgrUZV73';
 
-      jest.spyOn(openSearch, 'deleteByQuery').mockResolvedValue(docId);
+      jest.spyOn(userOsCommandPort, 'deleteUser').mockResolvedValue(docId);
 
-      const result = await service.remove(docId);
+      const result = await service.deleteUser(docId);
 
       expect(result).toBeTruthy();
     });
   });
 
-  describe('create', () => {
+  describe('createUser', () => {
     it('추가된 데이터를 반환하여야 한다.', async () => {
-      const createUserDto: CreateUserDto = {
+      const createUserCommand: CreateUserCommand = {
         email: 'test1@naver.com',
         firstName: 'kim1',
         gender: 'man',
-        id: '2',
-        ipAddress: '192.0.0.4',
-        lastName: 'dong-jeon',
+        ipAddress: '192.0.0.1',
+        lastName: 'dong-dong',
       };
 
-      const searchRes: any = { _id: 'N_weB5MBitdao_hyZ2iW' };
+      const searchRes: string = 'N_weB5MBitdao_hyZ2iW';
 
-      jest.spyOn(openSearch, 'index').mockResolvedValue(searchRes);
+      jest.spyOn(userOsCommandPort, 'createUser').mockResolvedValue(searchRes);
 
-      const result = await service.createOne(createUserDto);
+      const result = await service.createUser(createUserCommand);
 
-      expect(result).toBe(searchRes._id);
+      expect(result).toBe(searchRes);
     });
   });
 });
