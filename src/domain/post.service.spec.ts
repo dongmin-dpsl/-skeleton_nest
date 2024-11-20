@@ -1,42 +1,40 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { EntityManager } from '@mikro-orm/postgresql';
-import { describe } from 'node:test';
 import { PostService } from './post.service';
-import { PostRepository } from '../database/postgresql/post.repository';
 import { CreatePostCommand, UpdatePostCommand } from './port/in/post.usecase';
 import { PostModel } from './post.model';
+import { PostDbCommandPort } from './port/out/post.db.command.port';
+import { PostDbQueryPort } from './port/out/post.db.query.port';
 
 describe('PostService', () => {
   let service: PostService;
-  let postRepo: PostRepository;
-  let em: EntityManager;
+  let postDbCommandPort: PostDbCommandPort;
+  let postDbQueryPort: PostDbQueryPort;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         PostService,
         {
-          provide: PostRepository,
+          provide: 'PostDbCommandPort',
           useValue: {
-            create: jest.fn(),
-            findAll: jest.fn(),
-            findOne: jest.fn(),
-            nativeUpdate: jest.fn(),
-            nativeDelete: jest.fn(),
+            createPost: jest.fn(),
+            updatePost: jest.fn(),
+            deletePost: jest.fn(),
           },
         },
         {
-          provide: EntityManager,
+          provide: 'PostDbQueryPort',
           useValue: {
-            flush: jest.fn(),
+            findAll: jest.fn(),
+            findOne: jest.fn(),
           },
         },
       ],
     }).compile();
 
     service = module.get<PostService>(PostService);
-    postRepo = module.get<PostRepository>(PostRepository);
-    em = module.get<EntityManager>(EntityManager);
+    postDbCommandPort = module.get<PostDbCommandPort>('PostDbCommandPort');
+    postDbQueryPort = module.get<PostDbQueryPort>('PostDbQueryPort');
   });
 
   it('should be defined', () => {
@@ -50,16 +48,19 @@ describe('PostService', () => {
         content: '내용',
         writer: '작성자',
       };
-      const post: PostModel = { id: 1, ...createPostCommand };
+      const post: PostModel = {
+        id: 1,
+        ...createPostCommand,
+      };
 
-      jest.spyOn(postRepo, 'createPost').mockReturnValue(post);
-      jest.spyOn(em, 'flush').mockResolvedValue();
+      jest.spyOn(postDbCommandPort, 'createPost').mockResolvedValue(post);
 
       const result = await service.registerPost(createPostCommand);
 
       expect(result).toEqual(post);
-      expect(postRepo.createPost).toHaveBeenCalledWith(createPostCommand);
-      expect(em.flush).toHaveBeenCalled();
+      expect(postDbCommandPort.createPost).toHaveBeenCalledWith(
+        createPostCommand,
+      );
     });
   });
 
@@ -70,7 +71,7 @@ describe('PostService', () => {
         { id: 2, title: '제목1', content: '내용1', writer: '작성자1' },
       ];
 
-      jest.spyOn(postRepo, 'findAll').mockResolvedValue(posts);
+      jest.spyOn(postDbQueryPort, 'findAll').mockResolvedValue(posts);
 
       const result = await service.findAll();
       expect(result).toEqual(posts);
@@ -79,7 +80,7 @@ describe('PostService', () => {
     it('게시물이 없는 경우 빈 배열을 반환하여야 한다.', async () => {
       const posts: PostModel[] = [];
 
-      jest.spyOn(postRepo, 'findAll').mockResolvedValue(posts);
+      jest.spyOn(postDbQueryPort, 'findAll').mockResolvedValue(posts);
 
       const result = await service.findAll();
 
@@ -96,7 +97,7 @@ describe('PostService', () => {
         writer: '작성자',
       };
 
-      jest.spyOn(postRepo, 'findOne').mockResolvedValue(post);
+      jest.spyOn(postDbQueryPort, 'findOne').mockResolvedValue(post);
 
       const result = await service.findOne(1);
 
@@ -114,11 +115,11 @@ describe('PostService', () => {
       };
       const postModel: PostModel = { id: 1, ...post };
 
-      jest.spyOn(postRepo, 'updatePost').mockResolvedValue(postModel);
+      jest.spyOn(postDbCommandPort, 'updatePost').mockResolvedValue(postModel);
 
       const result = await service.updatePost(id, post);
 
-      expect(result).toEqual(true);
+      expect(result).toEqual(postModel);
     });
   });
 });

@@ -8,9 +8,11 @@ import {
   Delete,
   ParseIntPipe,
   Inject,
+  Req,
 } from '@nestjs/common';
 import {
   CreatePostCommand,
+  FindPostListCommand,
   PostUseCase,
   UpdatePostCommand,
 } from '../../domain/port/in/post.usecase';
@@ -28,8 +30,8 @@ export class PostController {
   }
 
   @Get()
-  findAll() {
-    return this.postUseCase.findAll();
+  findAll(@Req() findPostListCommand: FindPostListCommand) {
+    return this.postUseCase.findAll(findPostListCommand);
   }
 
   @Get(':id')
