@@ -1,17 +1,24 @@
 import { PostModel } from '../../post.model';
 
 export interface PostUseCase {
-  registerPost: (createPostCommand: CreatePostCommand) => Promise<PostModel>;
-  findAll: () => Promise<PostModel[]>;
-  findOne: (id: number) => Promise<PostModel>;
+  registerPost(createPostCommand: CreatePostCommand): Promise<PostModel>;
+  findAll(findPostListCommand: FindPostListCommand): Promise<PostModel[]>;
+  findOne(id: number): Promise<PostModel>;
   updatePost(
     id: number,
     updatePostCommand: UpdatePostCommand,
   ): Promise<PostModel>;
-  deletePost: (id: number) => Promise<void>;
+  deletePost(id: number): Promise<void>;
 }
 
-import { IsNotEmpty, MaxLength, NotEquals } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsNumber,
+  MaxLength,
+  NotEquals,
+  Min,
+  Max,
+} from 'class-validator';
 
 export class CreatePostCommand {
   @NotEquals(null)
@@ -28,7 +35,15 @@ export class CreatePostCommand {
   @MaxLength(5)
   writer: string;
 }
+export class FindPostListCommand {
+  @IsNumber()
+  @Min(0)
+  from: number;
 
+  @Min(1)
+  @Max(100)
+  size: number;
+}
 export class UpdatePostCommand extends CreatePostCommand {}
 
 export class DeletePostCommand {
