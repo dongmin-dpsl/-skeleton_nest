@@ -4,7 +4,7 @@ export const UserEntity = {
     _: 'email',
     keyword: 'email.keyword',
   },
-  first_name: {
+  firstName: {
     _: 'first_name',
     keyword: 'first_name.keyword',
   },
@@ -12,11 +12,11 @@ export const UserEntity = {
     _: 'gender',
     keyword: 'gender.keyword',
   },
-  ip_address: {
+  ipAddress: {
     _: 'ip_address',
     keyword: 'ip_address.keyword',
   },
-  last_name: {
+  lastName: {
     _: 'last_name',
     keyword: 'last_name.keyword',
   },
