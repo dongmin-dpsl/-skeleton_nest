@@ -83,16 +83,9 @@ export class UserRepository implements UserOsQueryPort, UserOsCommandPort {
       body: query,
     });
 
-    return res.hits.hits.map(({ _id, _source }) => {
-      return {
-        id: _id,
-        firstName: _source.first_name,
-        lastName: _source.last_name,
-        email: _source.email,
-        gender: _source.gender,
-        ipAddress: _source.ip_address,
-      };
-    });
+    return res.hits.hits.map(
+      ({ _id, _source }) => new UserModel({ id: _id, ..._source }),
+    );
   }
 
   async findOneById(id: string): Promise<UserModel> {
@@ -113,15 +106,8 @@ export class UserRepository implements UserOsQueryPort, UserOsCommandPort {
       body: query,
     });
 
-    const user = res.hits.hits[0]?._source;
+    const doc = res.hits.hits[0];
 
-    return {
-      id: res.hits.hits[0]?._id,
-      firstName: user?.first_name,
-      lastName: user?.last_name,
-      email: user?.email,
-      gender: user?.gender,
-      ipAddress: user?.ip_address,
-    };
+    return new UserModel({ id: doc._id, ...doc._source });
   }
 }
