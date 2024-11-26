@@ -15,11 +15,11 @@ export class UserRepository implements UserOsQueryPort, UserOsCommandPort {
 
   async createUser(createUserCommand: CreateUserCommand): Promise<string> {
     const body = {
-      email: createUserCommand.email,
-      first_name: createUserCommand.firstName,
-      last_name: createUserCommand.lastName,
-      gender: createUserCommand.gender,
-      ip_address: createUserCommand.ipAddress,
+      [UserEntity.email._]: createUserCommand.email,
+      [UserEntity.firstName._]: createUserCommand.firstName,
+      [UserEntity.lastName._]: createUserCommand.lastName,
+      [UserEntity.gender._]: createUserCommand.gender,
+      [UserEntity.ipAddress._]: createUserCommand.ipAddress,
     };
 
     const res = await this.openSearch.index({
@@ -36,11 +36,11 @@ export class UserRepository implements UserOsQueryPort, UserOsCommandPort {
     updateUserCommand: UpdateUserCommand,
   ): Promise<boolean> {
     const body = {
-      email: updateUserCommand.email,
-      first_name: updateUserCommand.firstName,
-      last_name: updateUserCommand.lastName,
-      gender: updateUserCommand.gender,
-      ip_address: updateUserCommand.ipAddress,
+      [UserEntity.email._]: updateUserCommand.email,
+      [UserEntity.firstName._]: updateUserCommand.firstName,
+      [UserEntity.lastName._]: updateUserCommand.lastName,
+      [UserEntity.gender._]: updateUserCommand.gender,
+      [UserEntity.ipAddress._]: updateUserCommand.ipAddress,
     };
 
     await this.openSearch.update({
@@ -70,11 +70,11 @@ export class UserRepository implements UserOsQueryPort, UserOsCommandPort {
       from: findUserListCommand.from,
       size: findUserListCommand.size,
       _source: [
-        UserEntity.first_name._,
-        UserEntity.last_name._,
+        UserEntity.firstName._,
+        UserEntity.lastName._,
         UserEntity.email._,
         UserEntity.gender._,
-        UserEntity.ip_address._,
+        UserEntity.ipAddress._,
       ],
     };
 
@@ -99,11 +99,11 @@ export class UserRepository implements UserOsQueryPort, UserOsCommandPort {
     const query = {
       size: 1,
       _source: [
-        UserEntity.first_name._,
-        UserEntity.last_name._,
+        UserEntity.firstName._,
+        UserEntity.lastName._,
         UserEntity.email._,
         UserEntity.gender._,
-        UserEntity.ip_address._,
+        UserEntity.ipAddress._,
       ],
       query: { term: { _id: { value: id } } },
     };
